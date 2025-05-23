@@ -1,0 +1,138 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Store {
+  id                  String                @id @default(cuid())
+  name                String
+  createdAt           DateTime              @default(now())
+  updatedAt           DateTime              @updatedAt
+  adminId             String                @unique
+  Employee            Employee[]
+  FileUploadInventory FileUploadInventory[]
+  FileUploadSales     FileUploadSales[]
+  InventoryIn         Inventory[]
+  products            Product[]
+  Sale                Sale[]
+  User                User                  @relation(fields: [adminId], references: [id])
+}
+
+model Product {
+  id          String   @id @default(cuid())
+  PLU         String   @unique
+  SKU         String
+  name        String
+  price       Float
+  stock       Int      @default(0)
+  category    String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  description String
+  storeId     String?
+  Store       Store?   @relation(fields: [storeId], references: [id])
+}
+
+model Inventory {
+  id           String               @id @default(cuid())
+  name         String
+  category     String
+  price        Float
+  receivedAt   DateTime             @default(now())
+  storeId      String
+  PLU          String
+  SKU          String
+  stock        Int
+  description  String
+  fileUploadId String?
+  FileUpload   FileUploadInventory? @relation(fields: [fileUploadId], references: [id])
+  Store        Store                @relation(fields: [storeId], references: [id])
+}
+
+model Sale {
+  id                String           @id @default(cuid())
+  name              String
+  category          String
+  price             Float
+  soldAt            DateTime         @default(now())
+  storeId           String
+  PLU               String
+  SKU               String
+  stock             Int
+  description       String
+  fileUploadSalesId String?
+  FileUploadSales   FileUploadSales? @relation(fields: [fileUploadSalesId], references: [id])
+  Store             Store            @relation(fields: [storeId], references: [id])
+}
+
+model FileUploadInventory {
+  id         String      @id @default(cuid())
+  fileHash   String      @unique
+  fileName   String
+  uploadedAt DateTime    @default(now())
+  storeId    String?
+  Store      Store?      @relation(fields: [storeId], references: [id])
+  inventory  Inventory[]
+}
+
+model FileUploadSales {
+  id         String   @id @default(cuid())
+  fileHash   String   @unique
+  fileName   String
+  uploadedAt DateTime @default(now())
+  storeId    String?
+  Store      Store?   @relation(fields: [storeId], references: [id])
+  Sale       Sale[]
+}
+
+model Employee {
+  id         String       @id @default(cuid())
+  name       String
+  gender     String
+  email      String
+  contact    String
+  address    String
+  type       EmployeeType
+  department Department
+  createdAt  DateTime     @default(now())
+  updatedAt  DateTime     @updatedAt
+  storeId    String?
+  Store      Store?       @relation(fields: [storeId], references: [id])
+}
+
+model RefreshToken {
+  id        String   @id
+  token     String   @unique
+  userId    String
+  createdAt DateTime @default(now())
+  updatedAt DateTime
+  User      User     @relation(fields: [userId], references: [id])
+}
+
+model User {
+  id           String         @id
+  email        String         @unique
+  password     String
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime
+  RefreshToken RefreshToken[]
+  Store        Store?
+}
+
+enum Department {
+  HR
+  IT
+  SALES
+  FINANCE
+  MARKETING
+  ADMINISTRATION
+}
+
+enum EmployeeType {
+  PERMANENT
+  CONTRACTUAL
+}

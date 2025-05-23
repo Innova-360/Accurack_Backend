@@ -1,0 +1,12 @@
+import { Module } from '@nestjs/common';
+import { ReportService } from './report.service';
+import { ReportController } from './report.controller';
+import { PrismaClientModule } from 'src/prisma-client/prisma-client.module';
+import { ReportRepository } from './report.repository';
+
+@Module({
+  imports: [PrismaClientModule],
+  controllers: [ReportController],
+  providers: [ReportService, ReportRepository],
+})
+export class ReportModule { }
